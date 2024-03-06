@@ -9,7 +9,7 @@ const logStream = fs.createWriteStream(path.join(logDir, "logs.log"), {
 	flags: "a",
 });
 
-const logger = morgan(
+export const logger = morgan(
 	function (tokens, req, res) {
 		const reqBody = { ...(req as Request).body }; // Create a copy of the request body
 		if (reqBody.password) {
