@@ -1,14 +1,18 @@
 import express from "express";
 import dotenv from "dotenv";
-import { readFileSync } from "fs";
+import path from "path";
+import { userRouter } from "./routes/routes";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-	res.send("Have a 🍺 or 🍻!");
+app.use(express.static(path.resolve("/home/thunman/myHomeFrontend/dist")));
+app.use(express.json());
+app.use("/api/users", userRouter);
+app.get("*", (req, res) => {
+	res.sendFile(path.resolve("/home/thunman/myHomeFrontend/dist/index.html"));
 });
 
 app.listen(port, () => {

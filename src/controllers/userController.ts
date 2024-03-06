@@ -4,12 +4,12 @@ import jwt from "jsonwebtoken";
 export const userController = {
 	login: async (req: Request, res: Response) => {
 		try {
-			const { userName, password } = req.body;
+			const { username, password } = req.body.values;
 			if (
-				userName === process.env.USERNAME &&
-				password === process.env.PWD
+				username === process.env.USERNAME &&
+				password === process.env.PASSWORD
 			) {
-				const token = jwt.sign(userName, process.env.JWT_SECRET, {
+				const token = jwt.sign({ username }, process.env.JWT_SECRET, {
 					expiresIn: "1h",
 				});
 				res.cookie("token", token, {
@@ -17,6 +17,9 @@ export const userController = {
 					secure: true,
 					sameSite: "none",
 				});
+				res.status(200).json({ message: "Success" });
+			} else {
+				res.status(401).json({ message: "Errorcode 2" });
 			}
 		} catch (error) {
 			console.error(error);
