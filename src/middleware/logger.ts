@@ -10,11 +10,12 @@ const logStream = fs.createWriteStream(path.join(logDir, "logs.log"), {
 });
 
 export const logger = morgan(
-	function (tokens, req, res) {
-		const reqBody = { ...(req as Request).body }; // Create a copy of the request body
+	(tokens, req, res) => {
+		const reqBody = { ...(req as Request).body };
 		if (reqBody.password) {
-			reqBody.password = "REDACTED"; // Redact the password
+			reqBody.password = "REDACTED";
 		}
+
 		return [
 			tokens.method(req, res),
 			tokens.url(req, res),
@@ -23,7 +24,7 @@ export const logger = morgan(
 			"-",
 			tokens["response-time"](req, res),
 			"ms",
-			JSON.stringify((req as Request).body),
+			JSON.stringify(reqBody),
 		].join(" ");
 	},
 	{ stream: logStream }

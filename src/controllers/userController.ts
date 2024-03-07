@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import path from "path";
+import fs from "fs";
+import { exec } from "child_process";
 
 export const userController = {
 	login: async (req: Request, res: Response) => {
 		try {
-			const { username, password } = req.body.values;
+			const { username, password } = req.body;
 			if (
 				username === process.env.USERNAME &&
 				password === process.env.PASSWORD
@@ -24,6 +27,41 @@ export const userController = {
 		} catch (error) {
 			console.error(error);
 			res.status(400).json({ message: "Errorcode: 2" });
+		}
+	},
+
+	getLogs: async (req: Request, res: Response) => {
+		try {
+			const filePath = path.resolve(__dirname, "../../logs/logs.log");
+			if (fs.existsSync(filePath)) {
+				const logFile = fs.readFileSync(filePath, "utf8");
+				res.json({ logFile });
+			} else {
+				res.status(404).json({ message: "Log file not found." });
+			}
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({
+				message: "An error occurred while fetching the logs.",
+			});
+		}
+	},
+	getStatus: async (req: Request, res: Response) => {
+		try {
+			exec(
+				"docker inspect -f '{{.State.Running}}' mongodb",
+				(error, stdout) => {
+					if (error) {
+						res.status(500).json({ message: "Error getting status" });
+					} else {
+						const isMongoRunning = stdout.trim() === "true";
+						const isMainPCRunning = true;
+						res.json({ mongo: isMongoRunning, pc: isMainPCRunning });
+					}
+				}
+			);
+		} catch (error) {
+			res.status(500).json({ message: "Error getting status" });
 		}
 	},
 };
