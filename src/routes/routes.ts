@@ -7,5 +7,7 @@ import { auth } from "../middleware/authentication";
 export const userRouter = express.Router();
 
 userRouter.post("/login", limiter, loginValidator, userController.login);
-userRouter.get("/getLogs", limiter, auth, userController.getLogs);
-userRouter.get("/getStatus", limiter, auth, userController.getStatus);
+userRouter.get("/getLogs", auth, userController.getLogs);
+userRouter.get("/getStatus", auth, userController.getStatus);
+userRouter.post("/toggleMongo", auth, userController.toggleMongo);
+userRouter.post("/hibernate", auth, userController.hibernatePC);

@@ -55,13 +55,64 @@ export const userController = {
 						res.status(500).json({ message: "Error getting status" });
 					} else {
 						const isMongoRunning = stdout.trim() === "true";
-						const isMainPCRunning = true;
-						res.json({ mongo: isMongoRunning, pc: isMainPCRunning });
+						exec("ping -c 1 192.168.50.135", (error, stdout) => {
+							const isMainPCRunning = stdout.includes(
+								"1 packets transmitted, 1 received"
+							);
+							res.json({ mongo: isMongoRunning, pc: isMainPCRunning });
+						});
 					}
 				}
 			);
 		} catch (error) {
 			res.status(500).json({ message: "Error getting status" });
+		}
+	},
+	toggleMongo: async (req: Request, res: Response) => {
+		try {
+			exec(
+				"docker inspect -f '{{.State.Running}}' mongodb",
+				(error, stdout) => {
+					if (error) {
+						res.status(500).json({ message: "Error getting status" });
+					} else {
+						const isMongoRunning = stdout.trim() === "true";
+						const command = isMongoRunning
+							? "docker stop mongodb"
+							: "docker start mongodb";
+
+						exec(command, (error, stdout) => {
+							if (error) {
+								res.status(500).json({
+									message: "Error toggling MongoDB container",
+								});
+							} else {
+								res.json({
+									message: `MongoDB container has been ${
+										isMongoRunning ? "stopped" : "started"
+									}`,
+								});
+							}
+						});
+					}
+				}
+			);
+		} catch (error) {
+			res.status(500).json({ message: "Error toggling MongoDB container" });
+		}
+	},
+	hibernatePC: async (req: Request, res: Response) => {
+		try {
+			const command = `sshpass -p ${process.env.SSH_PASSWORD} ssh ${process.env.USERNAME}@192.168.50.135 "shutdown -h"`;
+			exec(command, (error, stdout) => {
+				if (error) {
+					res.status(500).json({ message: "Error hibernating PC" });
+				} else {
+					res.json({ message: "PC is hibernating" });
+				}
+			});
+		} catch (error) {
+			res.status(500).json({ message: "Error hibernating PC" });
 		}
 	},
 };
