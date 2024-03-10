@@ -4,3 +4,6 @@
 errorCodes.txt
 /logs
 /ssl
+/front
+/Dockerfile
+/default.conf
