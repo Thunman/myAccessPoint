@@ -11,3 +11,5 @@ userRouter.get("/getLogs", auth, userController.getLogs);
 userRouter.get("/getStatus", auth, userController.getStatus);
 userRouter.post("/toggleMongo", auth, userController.toggleMongo);
 userRouter.post("/hibernate", auth, userController.hibernatePC);
+userRouter.post("/wakePC", auth, userController.wakePC);
+userRouter.post("/logout", auth, userController.logout);

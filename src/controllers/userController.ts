@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import path from "path";
 import fs from "fs";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
+import { wake } from "wol";
 
 export const userController = {
 	login: async (req: Request, res: Response) => {
@@ -20,6 +21,7 @@ export const userController = {
 					secure: true,
 					sameSite: "none",
 				});
+				res.cookie("loggedIn", true);
 				res.status(200).json({ message: "Success" });
 			} else {
 				res.status(401).json({ message: "Errorcode 2" });
@@ -101,18 +103,32 @@ export const userController = {
 			res.status(500).json({ message: "Error toggling MongoDB container" });
 		}
 	},
+
 	hibernatePC: async (req: Request, res: Response) => {
 		try {
 			const command = `sshpass -p ${process.env.SSH_PASSWORD} ssh ${process.env.USERNAME}@192.168.50.135 "shutdown -h"`;
-			exec(command, (error, stdout) => {
-				if (error) {
-					res.status(500).json({ message: "Error hibernating PC" });
-				} else {
-					res.json({ message: "PC is hibernating" });
-				}
-			});
+			execSync(command);
+			res.json({ message: "PC is hibernating" });
 		} catch (error) {
 			res.status(500).json({ message: "Error hibernating PC" });
+		}
+	},
+	wakePC: async (req: Request, res: Response) => {
+		wake("9C-5C-8E-87-CE-D0", (error) => {
+			if (error) {
+				console.error(error);
+				return res.status(500).json({ message: `${error}` });
+			} else {
+				return res.status(200).json({ message: "Success" });
+			}
+		});
+	},
+	logout: async (req: Request, res: Response) => {
+		try {
+			res.clearCookie("token");
+			res.status(200).json({ message: "logged out" });
+		} catch {
+			res.status(500).json({ message: "error" });
 		}
 	},
 };
