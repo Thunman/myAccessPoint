@@ -2,8 +2,11 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import path from "path";
 import fs from "fs";
-import { exec, execSync } from "child_process";
+import { exec as execCb, execSync } from "child_process";
 import { wake } from "wol";
+import Docker from "dockerode";
+import { promisify } from "util";
+const docker = new Docker();
 
 export const userController = {
 	login: async (req: Request, res: Response) => {
@@ -22,13 +25,25 @@ export const userController = {
 					sameSite: "none",
 				});
 				res.cookie("loggedIn", true);
-				res.status(200).json({ message: "Success" });
+				res.status(200).json({
+					success: true,
+					message: "Success",
+					data: {},
+				});
 			} else {
-				res.status(401).json({ message: "Errorcode 2" });
+				res.status(401).json({
+					success: false,
+					message: "Errorcode 2",
+					data: {},
+				});
 			}
 		} catch (error) {
 			console.error(error);
-			res.status(400).json({ message: "Errorcode: 2" });
+			res.status(400).json({
+				success: false,
+				message: "Errorcode: 2",
+				data: {},
+			});
 		}
 	},
 
@@ -37,70 +52,89 @@ export const userController = {
 			const filePath = path.resolve(__dirname, "../../logs/logs.log");
 			if (fs.existsSync(filePath)) {
 				const logFile = fs.readFileSync(filePath, "utf8");
-				res.json({ logFile });
+				res.json({
+					success: true,
+					message: "Log file fetched successfully",
+					data: { logFile },
+				});
 			} else {
-				res.status(404).json({ message: "Log file not found." });
+				res.status(404).json({
+					success: false,
+					message: "Log file not found.",
+					data: {},
+				});
 			}
 		} catch (error) {
 			console.error(error);
 			res.status(500).json({
+				success: false,
 				message: "An error occurred while fetching the logs.",
+				data: {},
 			});
 		}
 	},
+
 	getStatus: async (req: Request, res: Response) => {
+		const exec = promisify(execCb);
 		try {
-			exec(
-				"docker inspect -f '{{.State.Running}}' mongodb",
-				(error, stdout) => {
-					if (error) {
-						res.status(500).json({ message: "Error getting status" });
-					} else {
-						const isMongoRunning = stdout.trim() === "true";
-						exec("ping -c 1 192.168.50.135", (error, stdout) => {
-							const isMainPCRunning = stdout.includes(
-								"1 packets transmitted, 1 received"
-							);
-							res.json({ mongo: isMongoRunning, pc: isMainPCRunning });
-						});
-					}
-				}
+			const container = docker.getContainer("mongodb");
+			const mongo = await container.inspect();
+			const isMongoRunning = mongo.State.Running;
+			const { stdout } = await exec("ping -c 1 192.168.50.135");
+			const isPCRunning = stdout.includes(
+				"1 packets transmitted, 1 received"
 			);
+			res.status(200).json({
+				success: true,
+				message: "Here you go",
+				data: { isMongoRunning, isPCRunning },
+			});
 		} catch (error) {
-			res.status(500).json({ message: "Error getting status" });
+			res.status(500).json({
+				success: false,
+				message: "Error getting status",
+				data: {},
+			});
 		}
 	},
-	toggleMongo: async (req: Request, res: Response) => {
+	stopMongo: async (req: Request, res: Response) => {
 		try {
-			exec(
-				"docker inspect -f '{{.State.Running}}' mongodb",
-				(error, stdout) => {
-					if (error) {
-						res.status(500).json({ message: "Error getting status" });
-					} else {
-						const isMongoRunning = stdout.trim() === "true";
-						const command = isMongoRunning
-							? "docker stop mongodb"
-							: "docker start mongodb";
-
-						exec(command, (error, stdout) => {
-							if (error) {
-								res.status(500).json({
-									message: "Error toggling MongoDB container",
-								});
-							} else {
-								res.json({
-									message: `MongoDB container has been ${
-										isMongoRunning ? "stopped" : "started"
-									}`,
-								});
-							}
-						});
-					}
-				}
-			);
+			const container = await docker.getContainer("mongodb");
+			container.stop((error) => {
+				if (!error)
+					res.status(200).json({
+						success: true,
+						message: "Mongo stopped",
+						data: {},
+					});
+				else throw new Error();
+			});
 		} catch (error) {
-			res.status(500).json({ message: "Error toggling MongoDB container" });
+			res.status(500).json({
+				success: false,
+				message: "Error stoping",
+				data: error,
+			});
+		}
+	},
+	startMongo: async (req: Request, res: Response) => {
+		try {
+			const container = await docker.getContainer("mongodb");
+			container.start((error) => {
+				if (!error)
+					res.status(200).json({
+						success: true,
+						message: "Mongo started",
+						data: {},
+					});
+				else throw new Error();
+			});
+		} catch (error) {
+			res.status(500).json({
+				success: false,
+				message: "Error starting",
+				data: error,
+			});
 		}
 	},
 
@@ -108,27 +142,42 @@ export const userController = {
 		try {
 			const command = `sshpass -p ${process.env.SSH_PASSWORD} ssh ${process.env.USERNAME}@192.168.50.135 "shutdown -h"`;
 			execSync(command);
-			res.json({ message: "PC is hibernating" });
+			res.json({ success: true, message: "PC is hibernating", data: {} });
 		} catch (error) {
-			res.status(500).json({ message: "Error hibernating PC" });
+			res.status(500).json({
+				success: false,
+				message: "Error hibernating PC",
+				data: {},
+			});
 		}
 	},
+
 	wakePC: async (req: Request, res: Response) => {
 		wake("9C-5C-8E-87-CE-D0", (error) => {
 			if (error) {
 				console.error(error);
-				return res.status(500).json({ message: `${error}` });
+				return res
+					.status(500)
+					.json({ success: false, message: `${error}`, data: {} });
 			} else {
-				return res.status(200).json({ message: "Success" });
+				return res
+					.status(200)
+					.json({ success: true, message: "Success", data: {} });
 			}
 		});
 	},
+
 	logout: async (req: Request, res: Response) => {
 		try {
 			res.clearCookie("token");
-			res.status(200).json({ message: "logged out" });
+			res.clearCookie("loggedIn");
+			res.status(200).json({
+				success: true,
+				message: "logged out",
+				data: {},
+			});
 		} catch {
-			res.status(500).json({ message: "error" });
+			res.status(500).json({ success: false, message: "error", data: {} });
 		}
 	},
 };
