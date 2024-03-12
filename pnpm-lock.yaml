@@ -38,6 +38,12 @@ dependencies:
   morgan:
     specifier: ^1.10.0
     version: 1.10.0
+  ping:
+    specifier: ^0.4.4
+    version: 0.4.4
+  tcp-ping:
+    specifier: ^0.1.1
+    version: 0.1.1
   wol:
     specifier: ^1.0.7
     version: 1.0.7
@@ -67,6 +73,12 @@ devDependencies:
   '@types/node':
     specifier: ^20.11.24
     version: 20.11.24
+  '@types/ping':
+    specifier: ^0.4.4
+    version: 0.4.4
+  '@types/tcp-ping':
+    specifier: ^0.1.5
+    version: 0.1.5
   '@types/wol':
     specifier: ^1.0.4
     version: 1.0.4
@@ -248,6 +260,10 @@ packages:
       undici-types: 5.26.5
     dev: true
 
+  /@types/ping@0.4.4:
+    resolution: {integrity: sha512-ifvo6w2f5eJYlXm+HiVx67iJe8WZp87sfa683nlqED5Vnt9Z93onkokNoWqOG21EaE8fMxyKPobE+mkPEyxsdw==}
+    dev: true
+
   /@types/qs@6.9.12:
     resolution: {integrity: sha512-bZcOkJ6uWrL0Qb2NAWKa7TBU+mJHPzhx9jjLL1KHF+XpzEcR7EXHvjbHlGtR/IsP1vyPrehuS6XqkmaePy//mg==}
     dev: true
@@ -275,6 +291,10 @@ packages:
     resolution: {integrity: sha512-YcT8jP5F8NzWeevWvcyrrLB3zcneVjzYY9ZDSMAMboI+2zR1qYWFhwsyOFVzT7Jorn67vqxC0FRiw8YyG9P1ww==}
     dependencies:
       '@types/node': 18.19.22
+    dev: true
+
+  /@types/tcp-ping@0.1.5:
+    resolution: {integrity: sha512-79CSV6HXSi53zB7JwEpDMIPa881n7drC+Ed1JtQ5kdVUklYyG1g4GqefuUQy/AblK58Q5JAS7d9LWbdE2xiEqA==}
     dev: true
 
   /@types/webidl-conversions@7.0.3:
@@ -1360,6 +1380,11 @@ packages:
     engines: {node: '>=8.6'}
     dev: true
 
+  /ping@0.4.4:
+    resolution: {integrity: sha512-56ZMC0j7SCsMMLdOoUg12VZCfj/+ZO+yfOSjaNCRrmZZr6GLbN2X/Ui56T15dI8NhiHckaw5X2pvyfAomanwqQ==}
+    engines: {node: '>=4.0.0'}
+    dev: false
+
   /proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
@@ -1616,6 +1641,10 @@ packages:
       minizlib: 2.1.2
       mkdirp: 1.0.4
       yallist: 4.0.0
+    dev: false
+
+  /tcp-ping@0.1.1:
+    resolution: {integrity: sha512-7Ed10Ds0hYnF+O1lfiZ2iSZ1bCAj+96Madctebmq7Y1ALPWlBY4YI8C6pCL+UTlshFY5YogixKLpgDP/4BlHrw==}
     dev: false
 
   /to-regex-range@5.0.1:
