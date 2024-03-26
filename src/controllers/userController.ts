@@ -75,7 +75,7 @@ export const userController = {
   },
   getStatus: async (req: Request, res: Response) => {
     try {
-      const container = docker.getContainer("mongodb");
+      const container = docker.getContainer("mongo");
       const mongo = await container.inspect();
       const isMongoRunning = mongo.State.Running;
 
@@ -97,7 +97,7 @@ export const userController = {
   },
   stopMongo: async (req: Request, res: Response) => {
     try {
-      const container = await docker.getContainer("mongodb");
+      const container = await docker.getContainer("mongo");
       container.stop((error) => {
         if (!error)
           res.status(200).json({
@@ -117,7 +117,7 @@ export const userController = {
   },
   startMongo: async (req: Request, res: Response) => {
     try {
-      const container = await docker.getContainer("mongodb");
+      const container = await docker.getContainer("mongo");
       container.start((error) => {
         if (!error)
           res.status(200).json({
