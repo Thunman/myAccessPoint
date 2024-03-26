@@ -14,4 +14,4 @@ userRouter.post("/stopMongo", auth, userController.stopMongo);
 userRouter.post("/hibernate", auth, userController.hibernatePC);
 userRouter.post("/wakePC", auth, userController.wakePC);
 userRouter.post("/logout", userController.logout);
-userRouter.get("getDiskStatus", auth, userController.getDiskStatus);
+userRouter.get("/getDiskStatus", auth, userController.getDiskStatus);
